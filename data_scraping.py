@@ -5,51 +5,52 @@ import selenium.webdriver.support.ui as ui
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+
 chromedriver = "C:/Users/Roman/PycharmProjects/railway_check/TelegramAssistant/chromedriver.exe"
 phantomjs = "c:/Users/Roman/PycharmProjects/railway_check/TelegramAssistant/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe"
-driver = webdriver.Chrome(chromedriver)
+driver = webdriver.PhantomJS(phantomjs)
 actions = ActionChains(driver)
-wait = ui.WebDriverWait(driver,100)
+wait = ui.WebDriverWait(driver,10)
 
 #Названия станций на русском
-#s;dflgj
+
 def find_tickets(station_from,station_till,date):
     print("Start working...")
     driver.get("http://booking.uz.gov.ua/ru/")
+    #Chose station from
     station_from_input = driver.find_element_by_name("station_from")
     station_from_input.send_keys(str(station_from))
-    # driver.save_screenshot('screenshot1.png')
-
     #Нажать на что-то из выпадающего списка
-    wait.until(lambda driver: driver.find_element_by_xpath("//div[@id='station_from']/div[@class='autosuggest']/ul/li"))
-    button_from = driver.find_element_by_xpath("//div[@id='station_from']/div[@class='autosuggest']/ul/li")
-    # button_from_li = button_from.find_element_by_tag_name("li")
-    actions.double_click(button_from).perform()
-    print(button_from.get_attribute('innerHTML'))
-    
+    button_from = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@id='station_from']/div[@class='autosuggest']/ul/li")))
+    button_from.click()
+
+    #Choose station till    
     station_till_input = driver.find_element_by_name("station_till")
     station_till_input.send_keys(str(station_till))
     #Нажать на что-то из выпадающего списка
     wait.until(lambda driver: driver.find_element_by_xpath("//div[@id='station_till']/div[@class='autosuggest']/ul/li"))
-    button_till = driver.find_element_by_xpath("//div[@id='station_till']/div[@class='autosuggest']/ul/li")
-    actions.double_click(button_till).perform()
-    print(button_till.get_attribute('innerHTML'))
-    
-
-	#Теперь дата 
-	# id = date_dep --- это кнопка для календаря
-	#a[class=ui-state-default]  ----  это ячейки с номерами дат в календарике. Выбирать по числу
-	# class = ui-datepicker-calendar   ---- это сам календарь
-
+    button_till = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@id='station_till']/div[@class='autosuggest']/ul/li")))
+    button_till.click()
+    # Change date to date that user entered
+    driver.execute_script("var date=arguments[0];document.getElementById('date_dep').value = date;",date)
     search_button = driver.find_element_by_name("search")
-    actions.click(search_button).perform()
-    wait.until(lambda driver: driver.find_element_by_xpath("//div[@id='ts_res']/table/tbody"))
+    #Search for trains
+    actions.double_click(search_button).perform()
+    wait.until(lambda driver: driver.find_element_by_xpath("//div[@id='ts_res']/table/tbody").is_displayed())
 
-    driver.save_screenshot('screenshot.png')
-    # driver.quit()
-
-
-find_tickets('Киев','Кривой Рог','23.03.2017')
+    # If driver don`t find trains
+    if "По заданному Вами направлению мест нет" in driver.page_source:
+        return None
+    else:
+        #Вот это нужно доработать,что бы ещё и время показывало,и как-то красивее
+        information = driver.find_elements_by_xpath("//table[@class='vToolsDataTable']/tbody//div")
+        write_information = open('1.html','w')
+        for div in information:
+            write_information.write(div.get_attribute('outerHTML').replace('<button>Выбрать</button>',''))
+            write_information.write("<p></p>")
+        # print(information.get_attribute('innerHTML'))
+        driver.quit()
+find_tickets('Киев','Харьков','12.04.2017')
 
 # if __name__ == 'main':
 #     find_tickets('Киев','Кривой Рог')
