@@ -6,13 +6,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 
-chromedriver = "C:/Users/Roman/PycharmProjects/railway_check/TelegramAssistant/chromedriver.exe"
-phantomjs = "c:/Users/Roman/PycharmProjects/railway_check/TelegramAssistant/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe"
+# chromedriver = "C:/Users/Roman/PycharmProjects/railway_check/TelegramAssistant/chromedriver.exe"
+phantomjs = "c:/Users/Roman/PycharmProjects/railway_check/TelegramAssistant/webdrivers/phantomjs-2.1.1-windows/bin/phantomjs.exe"
 driver = webdriver.PhantomJS(phantomjs)
 actions = ActionChains(driver)
 wait = ui.WebDriverWait(driver,10)
 
-#Названия станций на русском
 
 def find_tickets(station_from,station_till,date):
     print("Start working...")
@@ -43,14 +42,32 @@ def find_tickets(station_from,station_till,date):
         return None
     else:
         #Вот это нужно доработать,что бы ещё и время показывало,и как-то красивее
-        information = driver.find_elements_by_xpath("//table[@class='vToolsDataTable']/tbody//div")
-        write_information = open('1.html','w')
-        for div in information:
-            write_information.write(div.get_attribute('outerHTML').replace('<button>Выбрать</button>',''))
-            write_information.write("<p></p>")
+        information = driver.find_elements_by_xpath("//table[@class='vToolsDataTable']/tbody/tr")
+        # write_information = open('1.html','w')
+        # for td in information:
+        #     write_information.write('<table>')
+        #     write_information.write(td.get_attribute('outerHTML').replace('<button>Выбрать</button>',''))
+        #     write_information.write('</table>')
+        anwser = '<table>'
+        for td in information:
+            anwser.append('<table>')
+            anwser.append(td.get_attribute('outerHTML').replace('<button>Выбрать</button>',''))
+            anwser.append('</table>')
+
+        # for div in information:
+        #     write_information.write(div.get_attribute('outerHTML').replace('<button>Выбрать</button>',''))
+        #     write_information.write("<p></p>")
         # print(information.get_attribute('innerHTML'))
         driver.quit()
-find_tickets('Киев','Харьков','12.04.2017')
+        return anwser
+
+# div class="place fr"
+# input class lastname,firstname
+# input value = stud , innerHTML = Студенческий
+# input class = stud_number 
+# Кнопка купить:
+# button class = complex_btn
+
 
 # if __name__ == 'main':
 #     find_tickets('Киев','Кривой Рог')
